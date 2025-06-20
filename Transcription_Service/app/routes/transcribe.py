@@ -1,25 +1,19 @@
-from fastapi import APIRouter, UploadFile, File, Query, HTTPException
-from app.utils.file_handler import save_temp_file, delete_file
+from fastapi import APIRouter
+from app.utils.file_handler import download_temp_file, delete_file
 from app.services.transcriber import transcribe_audio
-from app.models.schema import TranscriptionResponse
+from app.models.schema import TranscriptionRequest, TranscriptionResponse
 
 router = APIRouter(tags=["Transcription"])
 
 
 @router.post("/transcribe", response_model=TranscriptionResponse)
 async def transcribe_endpoint(
-    file: UploadFile = File(...),
-    language: str = Query(None),
-    task: str = Query("transcribe")
+    request: TranscriptionRequest
 ):
-    if file.content_type not in ["audio/wav", "audio/mpeg", "audio/mp3", "audio/x-wav"]:
-        raise HTTPException(
-            status_code=400, detail="Unsupported audio format.")
-
-    path = save_temp_file(file)
-
+    path = download_temp_file(request.fileUrl)
     try:
-        result = transcribe_audio(path, language=language, task=task)
+        result = transcribe_audio(
+            path, language=request.language, task=request.task)
         return {"text": result["text"], "segments": result.get("segments")}
     finally:
         delete_file(path)
