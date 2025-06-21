@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
 import { User } from "../models/user.model";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import envConfig from "../utils/envConfig";
 import { ApiResponse, ApiError } from "../config/api.config";
 import { signToken } from "../utils/jwt.utils";
 import { logger } from "../utils/reqLogger";
+import { AuthenticatedRequest } from "../types/req.types";
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -28,7 +28,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     });
 
     const token = signToken(
-      { id: savedUser._id, email: savedUser.email },
+      { userId: savedUser._id, email: savedUser.email },
       envConfig.JWT_EXPIRATION
     );
 
@@ -80,7 +80,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     const token = signToken(
-      { id: user._id, email: user.email },
+      { userId: user._id, email: user.email },
       envConfig.JWT_EXPIRATION
     );
 
@@ -139,18 +139,18 @@ export const validateSession = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { id } = req;
+    const { userId } = req as AuthenticatedRequest;
 
-    if (!id) {
+    if (!userId) {
       const error = new ApiError(400, "User ID is required");
       res.status(error.statusCode).json(error);
       return;
     }
 
-    logger.info(`Validating session for user ID: ${id}`);
+    logger.info(`Validating session for user ID: ${userId}`);
     res.status(200).json({
       message: "Session is valid",
-      id,
+      userId,
     });
     return;
   } catch (error: any) {

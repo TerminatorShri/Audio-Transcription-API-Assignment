@@ -13,6 +13,8 @@ interface EnvConfig {
   JWT_SECRET: string;
   JWT_EXPIRATION: string;
   CORS_ORIGIN: string;
+  TRANSCRIPTION_SERVICE_URL: string;
+  REDIS_URL: string;
 }
 
 const getEnvVariable = (key: keyof EnvConfig): string => {
@@ -35,6 +37,8 @@ const envConfig: EnvConfig = {
   JWT_SECRET: getEnvVariable("JWT_SECRET"),
   JWT_EXPIRATION: getEnvVariable("JWT_EXPIRATION"),
   CORS_ORIGIN: getEnvVariable("CORS_ORIGIN"),
+  TRANSCRIPTION_SERVICE_URL: getEnvVariable("TRANSCRIPTION_SERVICE_URL"),
+  REDIS_URL: getEnvVariable("REDIS_URL"),
 };
 
 export default envConfig;

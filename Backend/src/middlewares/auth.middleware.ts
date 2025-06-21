@@ -26,30 +26,30 @@ export const isAuthenticated = async (
     }
 
     const decoded = verifyToken(token) as {
-      id: string;
+      userId: string;
       email: string;
     };
 
-    const { id, email } = decoded;
+    const { userId, email } = decoded;
 
-    if (!id || !email) {
-      logger.error("Invalid token payload", { id, email });
+    if (!userId || !email) {
+      logger.error("Invalid token payload", { userId, email });
       res
         .status(401)
         .json(new ApiError(401, "Unauthorized", ["Invalid token payload"]));
       return;
     }
 
-    const user = await User.findById(id);
+    const user = await User.findById(userId);
     if (!user) {
-      logger.error("User not found", { id });
+      logger.error("User not found", { userId });
       res
         .status(401)
         .json(new ApiError(401, "Unauthorized", ["User not found"]));
       return;
     }
 
-    req.id = decoded.id;
+    req.userId = decoded.userId;
     req.email = decoded.email;
 
     next();

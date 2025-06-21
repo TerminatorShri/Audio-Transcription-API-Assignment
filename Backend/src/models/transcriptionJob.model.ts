@@ -4,6 +4,7 @@ export interface ITranscriptionJob extends Document {
   userId: mongoose.Types.ObjectId;
   fileUrl: string;
   status: "pending" | "in_progress" | "completed" | "failed";
+  transcriptionText: string;
   language?: string;
   webhookUrl?: string;
 }
@@ -18,6 +19,7 @@ const transcriptionJobSchema: Schema = new Schema<ITranscriptionJob>(
       enum: ["pending", "in_progress", "completed", "failed"],
       default: "pending",
     },
+    transcriptionText: { type: String, required: false, default: "" },
     language: { type: String, required: false },
     webhookUrl: { type: String, required: false },
   },

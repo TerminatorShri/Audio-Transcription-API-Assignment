@@ -4,6 +4,7 @@ import { logger, requestLogger } from "./utils/reqLogger";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import authRouter from "./routes/auth.routes";
+import transcriptionRouter from "./routes/transcription.routes";
 
 const app = express();
 
@@ -22,5 +23,6 @@ if (envConfig.LOGGING) {
 }
 
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/transcription", transcriptionRouter);
 
 export default app;
