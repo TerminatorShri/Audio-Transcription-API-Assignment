@@ -1,0 +1,204 @@
+openapi: 3.0.1
+info:
+  title: Audio Transcription API
+  version: 1.0.0
+  description: |
+    REST API for the Audio Transcription Service, including:
+    - User Registration, Login, Logout, Session Validation
+    - Creating Transcription Jobs
+    - Viewing Job Status and Results
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local Development Server
+paths:
+  # ========================= AUTH ENDPOINTS =========================
+  /auth/register:
+    post:
+      summary: Register a new user
+      description: Create an account with a username, email, and password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required: [username, email, password]
+              properties:
+                username:
+                  type: string
+                  example: johndoe
+                email:
+                  type: string
+                  format: email
+                  example: johndoe@example.com
+                password:
+                  type: string
+                  example: StrongPass123
+      responses:
+        "200":
+          description: User registered successfully.
+        "400":
+          description: User already exists.
+        "500":
+          description: Internal server error.
+
+  /auth/login:
+    post:
+      summary: Login an existing user
+      description: Authenticate user and set an HttpOnly cookie with JWT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: johndoe@example.com
+                password:
+                  type: string
+                  example: StrongPass123
+      responses:
+        "200":
+          description: User logged in successfully.
+        "404":
+          description: User not found.
+        "401":
+          description: Invalid credentials.
+        "500":
+          description: Internal server error.
+
+  /auth/logout:
+    post:
+      summary: Log out the current user
+      description: Clears the JWT cookie.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: User logged out successfully.
+        "401":
+          description: Unauthorized.
+        "500":
+          description: Internal server error.
+
+  /auth/validate-session:
+    get:
+      summary: Validate the current user session
+      description: Returns the userId if the session is valid.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Session is valid.
+        "400":
+          description: User ID is required.
+        "401":
+          description: Unauthorized.
+        "500":
+          description: Internal server error.
+
+  # ========================= TRANSCRIPTION ENDPOINTS =========================
+  /transcription/transcribe:
+    post:
+      summary: Create a Transcription Job
+      description: Upload an audio file and create a transcription job.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - file
+                - language
+                - task
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The audio file to be transcribed.
+                language:
+                  type: string
+                  example: en
+                task:
+                  type: string
+                  example: transcribe
+                webhookUrl:
+                  type: string
+                  format: uri
+                  example: https://webhook.site/test
+      responses:
+        "201":
+          description: Transcription job created successfully.
+        "400":
+          description: Bad request (missing fields).
+        "401":
+          description: Unauthorized (userId required).
+        "429":
+          description: Too many requests.
+        "500":
+          description: Internal server error.
+
+  /transcription/status/{jobId}:
+    get:
+      summary: Get Transcription Job Status
+      description: Returns the status of a transcription job.
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+            example: 60d21bb67c213
+      responses:
+        "200":
+          description: Status retrieved successfully.
+        "400":
+          description: Bad request.
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden (user not owner).
+        "404":
+          description: Job not found.
+        "500":
+          description: Internal server error.
+
+  /transcription/text/{jobId}:
+    get:
+      summary: Get Transcribed Text
+      description: Returns the transcription text if the job is completed.
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+            example: 60d21bb67c213
+      responses:
+        "200":
+          description: Transcribed text returned successfully.
+        "400":
+          description: Bad request (missing fields).
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden (user not owner).
+        "404":
+          description: Job not found.
+        "500":
+          description: Internal server error.
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
