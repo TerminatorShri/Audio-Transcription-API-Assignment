@@ -8,8 +8,8 @@ interface AuthenticatedRequest extends Request {
   email: string;
 }
 
-const RATE_LIMIT = Number(envConfig.RATE_LIMIT) || 100;
-const WINDOW_SIZE = Number(envConfig.WINDOW_SIZE) || 60 * 60;
+const RATE_LIMIT = Number(envConfig.RATE_LIMIT);
+const WINDOW_SIZE = Number(envConfig.WINDOW_SIZE);
 
 export const rateLimit = async (
   req: Request,
@@ -18,6 +18,7 @@ export const rateLimit = async (
 ) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;
+    console.log(RATE_LIMIT, WINDOW_SIZE);
 
     if (!userId) {
       res.status(401).json(new ApiError(401, "Unauthorized"));

@@ -37,7 +37,6 @@ export const createTranscriptionJob = async (
   }
 
   try {
-    // ✅ Use the uploaded file buffer directly
     const fileBuffer = req.file?.buffer;
 
     if (!fileBuffer) {
@@ -155,6 +154,67 @@ export const checkJobStatus = async (
     res
       .status(500)
       .json(new ApiError(500, error.message || "Internal Server Error"));
+    return;
+  }
+};
+
+export const getTranscribedText = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { jobId } = req.params;
+    const { userId } = req as AuthenticatedRequest;
+
+    if (!userId) {
+      logger.error("User ID is missing in the request");
+      res.status(400).json(new ApiError(400, "User ID is required"));
+      return;
+    }
+
+    if (!jobId) {
+      logger.error("Job ID is missing in the request");
+      res.status(400).json(new ApiError(400, "Job ID is required"));
+      return;
+    }
+
+    const job = await TranscriptionJob.findById(jobId);
+
+    if (!job) {
+      logger.error(`Job not found: ${jobId}`);
+      res.status(404).json(new ApiError(404, "Job not found"));
+      return;
+    }
+
+    if (job.userId.toString() !== userId) {
+      logger.error(
+        `Unauthorized access attempt to job: ${jobId} by user: ${userId}`
+      );
+      res.status(403).json(new ApiError(403, "Forbidden"));
+      return;
+    }
+
+    if (job.status !== "completed") {
+      logger.warn(`Job not completed yet: ${jobId}`);
+      res
+        .status(400)
+        .json(new ApiError(400, "Transcription not completed yet"));
+      return;
+    }
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { transcribedText: job.transcriptionText },
+          "Transcribed text fetched successfully"
+        )
+      );
+    return;
+  } catch (error) {
+    logger.error("Error fetching transcribed text: ", error);
+    res.status(500).json(new ApiError(500, "Internal Server Error"));
     return;
   }
 };
