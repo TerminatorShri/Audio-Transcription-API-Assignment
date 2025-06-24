@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { isAuthenticated } from "../middlewares/auth.middleware";
+import { rateLimit } from "../middlewares/rateLimit.middleware";
 import {
   createTranscriptionJob,
   checkJobStatus,
@@ -14,6 +15,7 @@ const uploadSingleFile = upload.single("file");
 router.post(
   "/transcribe",
   isAuthenticated,
+  rateLimit,
   uploadSingleFile,
   (req: Request, res: Response, next: NextFunction) => {
     logger.info("Transcribe request received", {

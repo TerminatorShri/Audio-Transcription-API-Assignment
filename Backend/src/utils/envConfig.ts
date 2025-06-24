@@ -15,6 +15,8 @@ interface EnvConfig {
   CORS_ORIGIN: string;
   TRANSCRIPTION_SERVICE_URL: string;
   REDIS_URL: string;
+  RATE_LIMIT: number;
+  WINDOW_SIZE: number;
 }
 
 const getEnvVariable = (key: keyof EnvConfig): string => {
@@ -39,6 +41,8 @@ const envConfig: EnvConfig = {
   CORS_ORIGIN: getEnvVariable("CORS_ORIGIN"),
   TRANSCRIPTION_SERVICE_URL: getEnvVariable("TRANSCRIPTION_SERVICE_URL"),
   REDIS_URL: getEnvVariable("REDIS_URL"),
+  RATE_LIMIT: Number(getEnvVariable("RATE_LIMIT")),
+  WINDOW_SIZE: Number(getEnvVariable("WINDOW_SIZE")),
 };
 
 export default envConfig;
